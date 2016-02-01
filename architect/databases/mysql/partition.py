@@ -36,6 +36,20 @@ class Partition(BasePartition):
         """.format(parent_table=self.table, name=self._get_name()))
 
 
+class KeyPartition(Partition):
+    def __init__(self, model, **meta):
+        super(KeyPartition, self).__init__(model, **meta)
+        self.partition_count = meta['partition_count']
+
+    def create(self):
+        return self.database.execute("""
+            ALTER TABLE {parent_table} PARTITION BY KEY({column}) PARTITIONS {partition_count};
+        """.format(
+                parent_table=self.table,
+                column=self.column_name,
+                partition_count=self.partition_count
+        ))
+
 class RangePartition(Partition):
     """
     Range partition type implementation.
